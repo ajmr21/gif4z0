@@ -24,15 +24,28 @@ firebase.initializeApp({
 */
 var dataBase = admin.database();
 
-console.log(dataBase.ref().child('gifs'));
-
-/* GET users listing. */
-router.get('/', function(req, res, next) {
-    dataBase.ref().child('gifs')
-        .once('value').then( function(snapshot) {
-            console.log(snapshot.val());
-            res.send('respond with a resource',snapshot.val());
+/* GET gifs listing. */
+router.get('/', (req, res, next) => {
+    let collection = dataBase.ref().child('gifs');
+    
+    if (req.query.desc){
+        collection.orderByChild('desc').equalTo(req.query.desc).once('value').then((snapshot) => {
+            res.status(200).jsonp(snapshot.val());
         });
+    } else {
+        collection.once('value').then((snapshot) => {
+            res.status(200).jsonp(snapshot.val());
+        });/* .error((err) => {
+            res.status(301).jsonp([]);
+        }) */
+    }        
 });
 
+ router.get('/:id', (req, res, next) => {
+    dataBase.ref().child('gifs')
+    .orderByChild('id').equalTo(req.params.id)
+        .once('value').then((snapshot) => {            
+            res.status(200).jsonp(snapshot.val());
+        });
+});
 module.exports = router;
